@@ -1,0 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 220 78% 19%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 221 64% 29%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 40 86% 58%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 220 78% 19%;
+
+    --radius: 0.75rem; /* 12px card radius */
+    --input-radius: 0.5rem; /* 8px input radius */
+
+    /* Pathshala brand tokens */
+    --navy-900: #0B2558;
+    --navy-700: #1B3A7A;
+    --navy-500: #3F5F9A;
+    --gold-500: #F0B33A;
+    --green-600: #1F8A3E;
+    --green-50: #E8F5EC;
+    --slate-50: #F5F7FA;
+
+    /* Per-school runtime override defaults */
+    --school-primary: #0B2558;
+    --school-secondary: #1B3A7A;
+    --school-accent: #F0B33A;
+    --school-cta: #1F8A3E;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 7%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 7%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 40 86% 58%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+  }
+}
+
+/* Custom Brand Components & Utilities */
+@layer components {
+  /* Demo site eyebrow title with green dot */
+  .section-eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-green-600 mb-2;
+  }
+  .section-eyebrow::before {
+    content: "";
+    @apply inline-block w-2 h-2 rounded-full bg-green-600;
+  }
+
+  /* Thin green bottom border on feature cards as in demo site */
+  .feature-card {
+    @apply relative bg-white rounded-xl shadow-soft p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-dropdown border-b-[3px] border-green-600;
+  }
+
+  /* Pill-shaped tabs */
+  .pill-tab {
+    @apply px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border border-transparent;
+  }
+  .pill-tab-active {
+    @apply bg-green-600 text-white shadow-sm;
+  }
+  .pill-tab-inactive {
+    @apply bg-white text-navy-700 hover:bg-slate-50 border-slate-200;
+  }
+
+  /* CTA Button matching demo green button */
+  .btn-cta {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md text-sm font-semibold text-white bg-navy-900 hover:bg-navy-800 transition-colors shadow-sm disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md text-sm font-semibold text-navy-900 border border-navy-900/20 hover:bg-navy-50 transition-colors disabled:opacity-50;
+  }
+}

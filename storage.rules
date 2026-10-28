@@ -1,0 +1,40 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isSuperAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'superAdmin';
+    }
+    
+    function isSameTenant(schoolId) {
+      return isAuthenticated() && request.auth.token.schoolId == schoolId;
+    }
+    
+    // Public school brand assets & CMS media
+    match /schools/{schoolId}/public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || (isSameTenant(schoolId) && (request.auth.token.role in ['schoolAdmin', 'principal']));
+    }
+    
+    // Internal school documents, student records, receipts, and photos
+    match /schools/{schoolId}/documents/{allPaths=**} {
+      allow read: if isSameTenant(schoolId);
+      allow write: if isSameTenant(schoolId) && (
+        request.resource.size < 10 * 1024 * 1024 && // 10MB limit
+        request.resource.contentType.matches('image/.*|application/pdf')
+      );
+    }
+    
+    // User profile avatars
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin()) &&
+                   request.resource.size < 5 * 1024 * 1024 &&
+                   request.resource.contentType.matches('image/.*');
+    }
+  }
+}

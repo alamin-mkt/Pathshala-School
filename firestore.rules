@@ -1,0 +1,190 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'superAdmin';
+    }
+
+    function isSameTenant(schoolId) {
+      return isAuthenticated() && request.auth.token.schoolId == schoolId;
+    }
+
+    function hasAnyRole(schoolId, roles) {
+      return isSameTenant(schoolId) && (request.auth.token.role in roles);
+    }
+
+    function isSchoolAdmin(schoolId) {
+      return hasAnyRole(schoolId, ['schoolAdmin', 'principal']);
+    }
+
+    // Platform settings & subscriptions (Super Admin managed)
+    match /plans/{planId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    match /platformAuditLogs/{logId} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    // Global user registry (mirrors Auth identity)
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        isSuperAdmin() ||
+        (resource != null && request.auth.token.schoolId == resource.data.schoolId)
+      );
+      // Only Cloud Functions / Super Admin can set role or schoolId
+      allow create, update: if isSuperAdmin() || (
+        isAuthenticated() && request.auth.uid == userId &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'schoolId', 'status'])
+      );
+      allow delete: if isSuperAdmin();
+    }
+
+    // Tenant Root: School Document
+    match /schools/{schoolId} {
+      // Public landing page requires read access to basic school profile & branding
+      allow read: if true;
+      allow create: if isSuperAdmin() || isAuthenticated();
+      allow update: if isSuperAdmin() || isSchoolAdmin(schoolId);
+      allow delete: if isSuperAdmin();
+
+      // CMS content for public school website
+      match /cmsContent/{sectionId} {
+        allow read: if true;
+        allow write: if isSchoolAdmin(schoolId);
+      }
+
+      // Academics: Academic Years, Classes, Sections, Subjects
+      match /academicYears/{yearId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId);
+      }
+      match /classes/{classId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId);
+      }
+      match /sections/{sectionId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId);
+      }
+      match /subjects/{subjectId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId);
+      }
+      match /timetable/{slotId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['teacher']);
+      }
+
+      // Staff directory
+      match /staff/{staffId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId);
+      }
+
+      // Students
+      match /students/{studentId} {
+        allow read: if isSameTenant(schoolId) && (
+          hasAnyRole(schoolId, ['schoolAdmin', 'principal', 'teacher', 'accountant', 'receptionist']) ||
+          (request.auth.token.role == 'student' && resource.data.userId == request.auth.uid) ||
+          (request.auth.token.role == 'parent' && request.auth.uid in resource.data.guardianIds)
+        );
+        allow write: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['receptionist']);
+      }
+
+      // Guardians
+      match /guardians/{guardianId} {
+        allow read: if isSameTenant(schoolId) && (
+          hasAnyRole(schoolId, ['schoolAdmin', 'principal', 'teacher', 'accountant', 'receptionist']) ||
+          (request.auth.token.role == 'parent' && resource.data.userId == request.auth.uid)
+        );
+        allow write: if isSchoolAdmin(schoolId);
+      }
+
+      // Attendance
+      match /attendance/{attendanceId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['teacher']);
+      }
+
+      // Examinations & Results
+      match /exams/{examId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['teacher']);
+      }
+      match /results/{resultId} {
+        allow read: if isSameTenant(schoolId) && (
+          hasAnyRole(schoolId, ['schoolAdmin', 'principal', 'teacher']) ||
+          (request.auth.token.role == 'student' && resource.data.studentId == request.auth.uid) ||
+          (request.auth.token.role == 'parent') // Verified in app layer through student link
+        );
+        allow write: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['teacher']);
+      }
+
+      // Fees, Invoices & Payments
+      match /feeStructures/{structureId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['accountant']);
+      }
+      match /invoices/{invoiceId} {
+        allow read: if isSameTenant(schoolId) && (
+          hasAnyRole(schoolId, ['schoolAdmin', 'principal', 'accountant']) ||
+          (request.auth.token.role == 'student' && resource.data.studentId == request.auth.uid) ||
+          (request.auth.token.role == 'parent')
+        );
+        allow write: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['accountant']);
+      }
+      match /payments/{paymentId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['accountant']);
+      }
+      match /expenses/{expenseId} {
+        allow read, write: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['accountant']);
+      }
+
+      // Communications: Notices & In-app messages
+      match /notices/{noticeId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['teacher']);
+      }
+      match /messages/{messageId} {
+        allow read, write: if isSameTenant(schoolId);
+      }
+
+      // Online Admissions Applications
+      match /applications/{appId} {
+        allow create: if true; // Public submission from website
+        allow read, update: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['receptionist']);
+      }
+
+      // Library & Transport
+      match /books/{bookId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['librarian']);
+      }
+      match /bookIssues/{issueId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId) || hasAnyRole(schoolId, ['librarian']);
+      }
+      match /routes/{routeId} {
+        allow read: if isSameTenant(schoolId);
+        allow write: if isSchoolAdmin(schoolId);
+      }
+
+      // Audit Logs
+      match /auditLogs/{logId} {
+        allow read: if isSchoolAdmin(schoolId);
+        allow create: if isSameTenant(schoolId);
+        allow update, delete: if false; // Immutable audit trail
+      }
+    }
+  }
+}
