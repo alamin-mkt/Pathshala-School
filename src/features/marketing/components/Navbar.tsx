@@ -42,8 +42,8 @@ export function Navbar({ onApplyClick }: { onApplyClick?: () => void }) {
             <span className="text-2xl font-extrabold text-navy-900 tracking-tight font-heading leading-tight group-hover:text-navy-700 transition-colors">
               Pathshala
             </span>
-            <span className="text-[10px] tracking-widest text-navy-500 font-semibold uppercase">
-              Better way to learn
+            <span className="text-[10px] tracking-widest text-navy-500 font-bold uppercase">
+              Learn. Grow. Shine.
             </span>
           </div>
         </Link>

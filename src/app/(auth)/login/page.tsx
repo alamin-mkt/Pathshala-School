@@ -112,8 +112,8 @@ export default function LoginPage() {
               <span className="text-2xl font-bold tracking-tight text-white font-heading">
                 Pathshala
               </span>
-              <p className="text-[10px] tracking-widest text-gold-500 uppercase font-medium">
-                Better way to learn
+              <p className="text-[10px] tracking-widest text-gold-500 uppercase font-bold">
+                Learn. Grow. Shine.
               </p>
             </div>
           </Link>

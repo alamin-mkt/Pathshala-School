@@ -41,8 +41,8 @@ export function Footer() {
                 <span className="text-2xl font-black font-heading text-white tracking-tight leading-tight block">
                   Pathshala
                 </span>
-                <span className="text-[10px] tracking-widest text-gold-500 font-semibold uppercase">
-                  Better way to learn
+                <span className="text-[10px] tracking-widest text-gold-500 font-bold uppercase">
+                  Learn. Grow. Shine.
                 </span>
               </div>
             </Link>

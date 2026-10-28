@@ -3,7 +3,7 @@ import "@/styles/globals.css";
 import { AppProviders } from "@/components/providers/AppProviders";
 
 export const metadata: Metadata = {
-  title: "Pathshala | Better Way to Learn - Multi-Tenant School Management SaaS",
+  title: "Pathshala | Learn. Grow. Shine. - Multi-Tenant School Management SaaS",
   description:
     "Production-grade, multi-tenant school management system. Manage academics, admissions, attendance, examinations, fee collection, staff and parent communication effortlessly.",
   icons: {

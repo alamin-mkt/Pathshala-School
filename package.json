@@ -10,6 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:firebase": "node scripts/test-connection.mjs",
+    "git:commit": "node scripts/git-commit.mjs",
+    "git:push": "node scripts/git-push.mjs",
     "seed": "node scripts/seed.mjs"
   },
   "dependencies": {

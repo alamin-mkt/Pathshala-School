@@ -1,6 +1,6 @@
 # Pathshala | Multi-Tenant School Management SaaS
 
-> **Tagline**: *"Better way to learn"*  
+> **Tagline**: *"Learn. Grow. Shine."*  
 > **Architecture**: Isolated Multi-Tenant SaaS with Next.js 14+ (App Router), TypeScript (strict), Tailwind CSS, Firebase Auth (Custom Claims RBAC), Cloud Firestore, Storage, and Canvas/Vector PDF Engine.
 
 ---
